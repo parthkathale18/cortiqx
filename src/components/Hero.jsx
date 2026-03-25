@@ -267,8 +267,10 @@ export default function Hero() {
             }}
           >
             <img
-              src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Animals/Rabbit.png"
+              src={HERO_RABBIT_PNG}
               alt="Hidden Rabbit"
+              decoding="async"
+              fetchPriority="low"
               style={{ width: '100%', height: '100%', objectFit: 'contain' }}
             />
           </motion.div>
@@ -406,8 +408,10 @@ export default function Hero() {
             filter: 'drop-shadow(0 15px 15px rgba(0,0,0,0.15))'
           }}>
             <img
-              src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Animals/Rabbit.png"
+              src={HERO_RABBIT_PNG}
               alt="Intro Rabbit"
+              decoding="async"
+              fetchPriority="high"
               style={{ width: '100%', height: '100%', objectFit: 'contain' }}
             />
           </div>

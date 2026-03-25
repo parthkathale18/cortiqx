@@ -232,12 +232,26 @@ export default function ConsultationModal() {
               <div className="fyw-consultation__panel fyw-consult-modal__panel">
                 {status === 'success' ? (
                   <div className="fyw-consultation__success" role="status" aria-live="polite">
-                    <h3>Request received</h3>
+                    <h3>Submitted successfully</h3>
                     <p>
-                      Thanks — we&apos;ve saved your details and sent a confirmation to your email (when mail is
-                      configured on the server). We&apos;ll be in touch shortly.
+                      Your consultation request was submitted. We have your details and will follow up soon.
                     </p>
-                    <button type="button" className="fyw-btn fyw-btn--outline" onClick={() => setStatus('idle')}>
+                    {confirmationEmailSent ? (
+                      <p>We sent a confirmation email to the address you provided.</p>
+                    ) : (
+                      <p>
+                        If you don&apos;t see a confirmation email within a few minutes, check spam or reach us at{' '}
+                        <a href="mailto:hello@cortiqx.in">hello@cortiqx.in</a>.
+                      </p>
+                    )}
+                    <button
+                      type="button"
+                      className="fyw-btn fyw-btn--outline"
+                      onClick={() => {
+                        setStatus('idle')
+                        setConfirmationEmailSent(false)
+                      }}
+                    >
                       Book another
                     </button>
                   </div>

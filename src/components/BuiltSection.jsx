@@ -20,6 +20,7 @@ import {
 } from '../utils/portfolioNormalize.js'
 import { useMediaQuery } from '../hooks/useMediaQuery.js'
 import { FYW_VIEWPORT, fywRevealTransition } from '../lib/fywMotion.js'
+import { preloadImageUrls } from '../lib/preloadImages.js'
 
 const staticWebProjects = staticProjects.filter((p) => p.domain === WEB_DEVELOPMENT_DOMAIN)
 
@@ -66,11 +67,19 @@ function useWebDevelopmentPortfolio() {
         const web = all.filter((p) => p.domain === WEB_DEVELOPMENT_DOMAIN)
         // No Firestore rows yet → show bundled samples; otherwise only real web-dev rows
         const list = web.length > 0 ? web : snap.docs.length === 0 ? staticWebProjects : []
+        preloadImageUrls(
+          list.map((p) => portfolioHeroImage(p)).filter(Boolean),
+          12
+        )
         setProjects(list)
         setReady(true)
       },
       (err) => {
         console.warn('[Built section / portfolio]', err?.code, err?.message)
+        preloadImageUrls(
+          staticWebProjects.map((p) => portfolioHeroImage(p)).filter(Boolean),
+          12
+        )
         setProjects(staticWebProjects)
         setReady(true)
       }
@@ -136,14 +145,20 @@ function BuiltScrollScene({ projects, header }) {
     return (
       <div className="fyw-built__simple-wrap">
         <div className="fyw-container fyw-built__scroll-inner fyw-built__simple">
-          {projects.map((p) => {
+          {projects.map((p, imgIndex) => {
             const src = portfolioHeroImage(p)
             const ph = liveUrlHref(p.url)
             return (
               <article key={p.id} className="fyw-built__simple-card">
                 <DesktopWindow className="fyw-built__window--simple">
                   {src ? (
-                    <img src={src} alt="" loading="lazy" decoding="async" />
+                    <img
+                      src={src}
+                      alt=""
+                      loading={imgIndex < 4 ? 'eager' : 'lazy'}
+                      decoding="async"
+                      {...(imgIndex === 0 ? { fetchPriority: 'high' } : imgIndex >= 4 ? { fetchPriority: 'low' } : {})}
+                    />
                   ) : (
                     <div
                       className="fyw-built__img-placeholder fyw-built__img-placeholder--in-window"
@@ -224,6 +239,7 @@ function BuiltScrollScene({ projects, header }) {
               const src = portfolioHeroImage(p)
               const angle = i * step
               const href = liveUrlHref(p.url)
+              const primeCarousel = i < 3
 
               return (
                 <div
@@ -251,7 +267,13 @@ function BuiltScrollScene({ projects, header }) {
                       <div className="fyw-built__carousel-image-side">
                         <div className="fyw-built__carousel-image-wrap">
                           {src ? (
-                            <img src={src} alt="" loading="lazy" decoding="async" />
+                            <img
+                              src={src}
+                              alt=""
+                              loading={primeCarousel ? 'eager' : 'lazy'}
+                              decoding="async"
+                              {...(i === 0 ? { fetchPriority: 'high' } : i >= 3 ? { fetchPriority: 'low' } : {})}
+                            />
                           ) : (
                             <div
                               className="fyw-built__img-placeholder fyw-built__img-placeholder--in-window"

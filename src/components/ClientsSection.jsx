@@ -3,6 +3,7 @@ import { motion } from 'framer-motion'
 import { FYW_VIEWPORT, FYW_EASE, fywRevealTransition } from '../lib/fywMotion.js'
 import { collection, onSnapshot, orderBy, query } from 'firebase/firestore'
 import { db } from '../firebase/config'
+import { preloadImageUrls } from '../lib/preloadImages.js'
 import './ClientsSection.css'
 
 function domainHref(domain) {
@@ -12,7 +13,7 @@ function domainHref(domain) {
   return `https://${d}`
 }
 
-function ClientMark({ client }) {
+function ClientMark({ client, priority }) {
   const href = domainHref(client.domain)
   const label = client.name?.trim() || 'Client'
 
@@ -20,7 +21,14 @@ function ClientMark({ client }) {
     <div className="fyw-clients__circle">
       <div className="fyw-clients__media">
         {client.logo ? (
-          <img src={client.logo} alt={label} className="fyw-clients__img" loading="lazy" decoding="async" />
+          <img
+            src={client.logo}
+            alt={label}
+            className="fyw-clients__img"
+            loading={priority ? 'eager' : 'lazy'}
+            decoding="async"
+            {...(priority ? { fetchPriority: 'high' } : {})}
+          />
         ) : (
           <span className="fyw-clients__initial" aria-hidden>
             {label.charAt(0).toUpperCase()}
@@ -50,7 +58,12 @@ export default function ClientsSection() {
     const unsub = onSnapshot(
       q,
       (snap) => {
-        setClients(snap.docs.map((d) => ({ id: d.id, ...d.data() })))
+        const list = snap.docs.map((d) => ({ id: d.id, ...d.data() }))
+        preloadImageUrls(
+          list.map((c) => c.logo).filter(Boolean),
+          16
+        )
+        setClients(list)
         setReady(true)
       },
       (err) => {
@@ -101,7 +114,11 @@ export default function ClientsSection() {
           <div className="fyw-clients__marquee">
             <div className="fyw-clients__track">
               {trackItems.map((c, i) => (
-                <ClientMark key={`${c.id}-${i}`} client={c} />
+                <ClientMark
+                  key={`${c.id}-${i}`}
+                  client={c}
+                  priority={i < Math.min(clients.length, 10)}
+                />
               ))}
             </div>
           </div>

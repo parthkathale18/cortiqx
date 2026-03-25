@@ -5,6 +5,7 @@ import { collection, onSnapshot, orderBy, query } from 'firebase/firestore'
 import { db } from '../firebase/config'
 import { DOMAINS } from '../data/portfolioData'
 import { normalizePortfolioDoc, portfolioHeroImage } from '../utils/portfolioNormalize'
+import { preloadImageUrls } from '../lib/preloadImages.js'
 import Seo from '../seo/Seo.jsx'
 import { BRAND } from '../seo/brand.js'
 import './ProjectsPage.css'
@@ -36,6 +37,13 @@ export default function ProjectsPage() {
             projectStatus: data.projectStatus === 'ongoing' ? 'ongoing' : 'delivered',
           }
         })
+        const heroUrls = list.map((row) => portfolioHeroImage(row)).filter(Boolean)
+        preloadImageUrls(heroUrls, 16)
+        heroUrls.forEach((src) => {
+          const img = new Image()
+          img.src = src
+        })
+
         setProjects(list)
         setReady(true)
       },
@@ -84,16 +92,23 @@ export default function ProjectsPage() {
         {ready && projects.length > 0 && (
           <div className="fyw-container projects-page__grid-wrap">
             <ul className="projects-page__grid">
-              {projects.map((p) => {
+              {projects.map((p, index) => {
                 const src = portfolioHeroImage(p)
                 const domainMeta = DOMAINS[p.domain] || { label: p.domain || 'Project', color: 'var(--fyw-accent)' }
                 const href = liveUrlHref(p.url)
+                const eager = index < 8
                 return (
                   <li key={p.id} className="projects-page__card">
                     <div className="projects-page__card-inner">
                       <div className="projects-page__preview">
                         {src ? (
-                          <img src={src} alt="" loading="lazy" decoding="async" />
+                          <img
+                            src={src}
+                            alt=""
+                            loading={eager ? 'eager' : 'lazy'}
+                            decoding="async"
+                            {...(index < 3 ? { fetchPriority: 'high' } : index >= 8 ? { fetchPriority: 'low' } : {})}
+                          />
                         ) : (
                           <div
                             className="projects-page__preview-placeholder"

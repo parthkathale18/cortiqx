@@ -6,6 +6,7 @@ import { normalizeFeaturedProject } from '../data/featuredProjectThemes'
 import ConsultationLink from './ConsultationLink.jsx'
 import { useMediaQuery } from '../hooks/useMediaQuery.js'
 import { FYW_VIEWPORT_REPEAT, fywRevealTransition } from '../lib/fywMotion.js'
+import { preloadImageUrls } from '../lib/preloadImages.js'
 
 /**
  * Featured projects (Firestore `featuredProjects`, published + ordered):
@@ -109,7 +110,7 @@ function ProjectCardVisual({ project, index }) {
           className="fyw-stack-card__photo"
           loading="eager"
           decoding="async"
-          {...(index === 0 ? { fetchPriority: 'high' } : {})}
+          fetchPriority={index < 4 ? 'high' : 'low'}
         />
       </div>
     )
@@ -326,6 +327,10 @@ function usePublishedFeaturedProjects() {
           .filter((p) => p.published)
           .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
 
+        preloadImageUrls(
+          list.map((p) => p.image).filter(Boolean),
+          12
+        )
         list.forEach((p) => {
           if (p.image) {
             const img = new Image()
